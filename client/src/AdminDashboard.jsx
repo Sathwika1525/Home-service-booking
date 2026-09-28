@@ -17,11 +17,14 @@ function AdminDashboard() {
       }
 
       try {
-        const response = await fetch("/api/admin/bookings", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/admin/bookings`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         const data = await response.json();
 
@@ -64,7 +67,7 @@ function AdminDashboard() {
 
     try {
       const response = await fetch(
-        `/api/admin/bookings/${bookingId}/cancel`,
+        `${import.meta.env.VITE_API_URL}/api/admin/bookings/${bookingId}/cancel`,
         {
           method: "PATCH",
           headers: {

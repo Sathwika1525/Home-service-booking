@@ -43,7 +43,7 @@ function HomePage() {
   const [bookingError, setBookingError] = useState("");
 
   useEffect(() => {
-    fetch("/api/services")
+    fetch(`${import.meta.env.VITE_API_URL}/api/services`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("Failed to fetch services");
@@ -89,7 +89,7 @@ function HomePage() {
     setBookingError("");
 
     try {
-      const response = await fetch("/api/bookings", {
+      const response = await fetch( `${import.meta.env.VITE_API_URL}/api/bookings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

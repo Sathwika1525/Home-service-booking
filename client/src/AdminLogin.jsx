@@ -13,13 +13,16 @@ function AdminLogin() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/admin/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, password }),
+        }
+      );
 
       const data = await response.json();
 
@@ -38,7 +41,13 @@ function AdminLogin() {
   }
 
   return (
-    <div style={{ maxWidth: "400px", margin: "80px auto", padding: "24px" }}>
+    <div
+      style={{
+        maxWidth: "400px",
+        margin: "80px auto",
+        padding: "24px",
+      }}
+    >
       <h2>Admin Login</h2>
       <p>Sign in to manage your bookings.</p>
 
@@ -50,7 +59,12 @@ function AdminLogin() {
           onChange={(e) => setUsername(e.target.value)}
           placeholder="Enter username"
           required
-          style={{ display: "block", width: "100%", padding: "12px", margin: "8px 0 16px" }}
+          style={{
+            display: "block",
+            width: "100%",
+            padding: "12px",
+            margin: "8px 0 16px",
+          }}
         />
 
         <label>Password</label>
@@ -60,7 +74,12 @@ function AdminLogin() {
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Enter password"
           required
-          style={{ display: "block", width: "100%", padding: "12px", margin: "8px 0 16px" }}
+          style={{
+            display: "block",
+            width: "100%",
+            padding: "12px",
+            margin: "8px 0 16px",
+          }}
         />
 
         {error && <p style={{ color: "red" }}>{error}</p>}
