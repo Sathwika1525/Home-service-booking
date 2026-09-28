@@ -1,13 +1,22 @@
-
 require("dotenv").config();
 
 const express = require("express");
+const cors = require("cors");
 const pool = require("./db");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const verifyAdminToken = require("./middleware");
 
 const app = express();
+
+// CORS configuration for Vercel frontend
+app.use(
+  cors({
+    origin: "https://homeservicebooking-bice.vercel.app",
+    methods: ["GET", "POST", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use(express.json());
 
@@ -61,33 +70,40 @@ app.get(
   }
 );
 
-app.patch("/api/admin/bookings/:id/cancel", verifyAdminToken, async (req, res) => {
-  try {
-    const { id } = req.params;
+// Cancel booking
+app.patch(
+  "/api/admin/bookings/:id/cancel",
+  verifyAdminToken,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
 
-    const result = await pool.query(
-      `UPDATE bookings
-       SET status = 'cancelled'
-       WHERE id = $1 AND status = 'confirmed'
-       RETURNING *`,
-      [id]
-    );
+      const result = await pool.query(
+        `UPDATE bookings
+         SET status = 'cancelled'
+         WHERE id = $1 AND status = 'confirmed'
+         RETURNING *`,
+        [id]
+      );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        error: "Booking not found or already cancelled",
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          error: "Booking not found or already cancelled",
+        });
+      }
+
+      res.json({
+        message: "Booking cancelled successfully",
+        booking: result.rows[0],
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        error: "Failed to cancel booking",
       });
     }
-
-    res.json({
-      message: "Booking cancelled successfully",
-      booking: result.rows[0],
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to cancel booking" });
   }
-});
+);
 
 // Admin login API
 app.post("/api/admin/login", async (req, res) => {
@@ -124,7 +140,6 @@ app.post("/api/admin/login", async (req, res) => {
       });
     }
 
-    // Generate JWT token
     const token = jwt.sign(
       { id: admin.id, username: admin.username },
       process.env.JWT_SECRET,
@@ -235,7 +250,7 @@ app.post("/api/bookings", async (req, res) => {
 
     const service = serviceResult.rows[0];
 
-    // Calculate end time using service duration
+    // Calculate end time
     const endAt = new Date(
       startAt.getTime() +
         Number(service.duration_minutes) * 60 * 1000
@@ -272,7 +287,7 @@ app.post("/api/bookings", async (req, res) => {
 
     const technicianId = technicianResult.rows[0].id;
 
-    // Insert booking; database prevents overlapping confirmed bookings
+    // Insert booking
     const bookingResult = await pool.query(
       `INSERT INTO bookings
         (service_id, technician_id, customer_name, customer_phone,
@@ -309,7 +324,7 @@ app.post("/api/bookings", async (req, res) => {
 });
 
 // Start server
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
